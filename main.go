@@ -48,37 +48,26 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	out, exists := execCommand(e.execpath, e.address)
 
 	for _, path := range e.mountpath {
+		flag := 0.0
+
 		if !exists {
 			log.Fatalf("Get NFS storage path failed caused by: %s", string(out))
-			ch <- prometheus.MustNewConstMetric(
-				up, prometheus.GaugeValue, 0.0,
-				path, e.address,
-			)
-			continue
-		}
+		} else {
+			log.Infoln("Getting showmount result succeed.")
 
-		log.Infoln("Getting showmount result succeed.")
-		flag := false
-
-		for _, p := range strings.Split(string(out), "\n") {
-			if strings.HasPrefix(p, path) {
-				log.Infoln("Mount Path is matching NFS server.")
-				ch <- prometheus.MustNewConstMetric(
-					up, prometheus.GaugeValue, 1.0,
-					path, e.address,
-				)
-				flag = true
-				break
+			for _, p := range strings.Split(string(out), "\n") {
+				if strings.Split(p, " ")[0] == path {
+					log.Infoln("Mount Path is matching NFS server.")
+					flag = 1.0
+					break
+				}
 			}
 		}
 
-		if !flag {
-			log.Errorf("Mount Path %s not in NFS Path List %s.", path, string(out))
-			ch <- prometheus.MustNewConstMetric(
-				up, prometheus.GaugeValue, 0.0,
-				path, e.address,
-			)
-		}
+		ch <- prometheus.MustNewConstMetric(
+			up, prometheus.GaugeValue, flag,
+			path, e.address,
+		)
 	}
 }
 
