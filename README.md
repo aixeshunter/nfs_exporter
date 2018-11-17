@@ -51,5 +51,5 @@ gotest: run go tests and reformats
 # HELP nfs_up Was the last query of NFS successful.
 nfs_up{mount_path=" /mnt",nfs_address="192.168.0.2"} 0
 nfs_up{mount_path=" /opt",nfs_address="192.168.0.3"} 0
-nfs_up{mount_path="/opt/nfs",nfs_address="92.168.0.3"} 1
+nfs_up{mount_path="/opt/nfs",nfs_address="192.168.0.3"} 1
 ```
