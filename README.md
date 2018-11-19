@@ -26,6 +26,7 @@ go get github.com/aixeshunter/nfs_exporter
 
 ## Make
 ```
+promu: make prometheus library
 build: Go build
 docker: build and run in docker container
 gotest: run go tests and reformats

@@ -3,18 +3,23 @@ FIRST_GOPATH := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 
 PREFIX ?= _outputs
 
-DOCKERFILE        ?= Dockerfile
+DOCKERFILE	  ?= Dockerfile
 DOCKER_REPO       ?= aixeshunter
-DOCKER_IMAGE_NAME ?= nfs_exporter
+DOCKER_IMAGE_NAME ?= nfs-exporter
 DOCKER_IMAGE_TAG  ?= v1.0
 
+PROMU := $(FIRST_GOPATH)/bin/promu
+
+.PHONY: promu
+promu:
+	GOOS= GOARCH= $(GO) get -v -u github.com/prometheus/promu
 
 .PHONY: build
-build:
-        @echo ">> building binaries"
-        $(GO) build .
+build: promu
+	@echo ">> building binaries"
+	$(PROMU) build -v
 
 .PHONY: docker
-docker: build
-        @echo ">> building docker image from $(DOCKERFILE)"
-        @docker build -t "$(DOCKER_REPO)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)" .
+docker: 
+	@echo ">> building docker image from $(DOCKERFILE)"
+	@docker build -t "$(DOCKER_REPO)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)" .
