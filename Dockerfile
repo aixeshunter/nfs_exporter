@@ -1,5 +1,5 @@
 FROM          alpine:latest
-MAINTAINER    Aixes Hunter <aixeshunter@gmail.com>
+LABEL         maintainer="Aixes Hunter <aixeshunter@gmail.com>"
 
 # ENV http_proxy "http://10.13.81.14:6555"
 
