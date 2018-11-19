@@ -11,7 +11,7 @@ func execCommand(execpath, address string) (string, bool) {
 
 	out, err := exec.Command(execpath, params...).Output()
 	if err != nil {
-		log.Fatalf("Get NFS storage path failed caused by: %v", err)
+		log.Errorf("Get NFS storage path failed: %v", err)
 		return string(out), false
 	}
 

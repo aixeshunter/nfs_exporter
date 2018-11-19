@@ -64,7 +64,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		flag := 0.0
 
 		if !exists {
-			log.Fatalf("Get NFS storage path failed caused by: %s", string(out))
+			log.Errorf("Get NFS storage path by command showmount failed!")
 		} else {
 			log.Infoln("Getting showmount result succeed.")
 
