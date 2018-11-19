@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nfs-exporter
+spec:
+  selector:
+    matchLabels:
+      k8s-app: nfs-exporter
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: nfs-exporter
+        app: nfs-exporter
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/master
+                operator: Exists
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: nfs-exporter
+      
+        image: aixeshunter/nfs_exporter:v1.0
+        args:
+        - "--nfs.storage-path=/opt/nfs1, /opt/nfs2, /opt/nfs3"
+        - "--nfs.address=192.168.0.2"
+        ports:
+        - name: http-metrics
+          containerPort: 9689
+        
