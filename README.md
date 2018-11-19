@@ -1,13 +1,14 @@
 # nfs_exporter
 NFS exporter for Prometheus
 
-## Installaton
+## Installation
 
 ```
-go get github.com/aixeshunter/nfs_exporter
+go get -u -v github.com/aixeshunter/nfs_exporter
 
-./nfs_exporter
+./${GOPATH}/bin/nfs_exporter --${flags} ...
 ```
+
 
 ## Usage of `nfs_exporter`
 
@@ -32,7 +33,6 @@ docker: build and run in docker container
 gotest: run go tests and reformats
 format: formatting code
 vet:    vetting code
-
 ```
 
 **build**: runs go build for nfs_exporter

@@ -140,7 +140,7 @@ func main() {
 		num, err = w.Write([]byte(`<html>
 			<head><title>NFS Exporter v` + version.Version + `</title></head>
 			<body>
-			<h1>NFS Exporter v` + version.Version + `</h1>
+			<h1>NFS Exporter v1.0</h1>
 			<p><a href='` + *metricsPath + `'>Metrics</a></p>
 			</body>
 			</html>`))
