@@ -70,7 +70,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 			for _, p := range strings.Split(string(out), "\n") {
 				if strings.Split(p, " ")[0] == path {
-					log.Infoln("Mount Path is matching NFS server.")
+					log.Infoln("Mount Path is matching NFS server.", path, e.address)
 					flag = 1.0
 					break
 				}
