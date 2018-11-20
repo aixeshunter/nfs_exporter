@@ -1,9 +1,26 @@
+// Copyright 2018 The Prometheus Authors
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
-	"strings"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 
+	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/log"
 )
 
@@ -11,37 +28,69 @@ const (
 	ExecPath = "/usr/sbin/showmount"
 )
 
+type nfs struct {
+	*httptest.Server
+	response []byte
+}
+
+func handler(h *nfs) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Write(h.response)
+	}
+}
+
+func newNFS(response []byte) *nfs {
+	h := &nfs{response: response}
+	h.Server = httptest.NewServer(handler(h))
+	return h
+}
+
+func readGauge(m prometheus.Gauge) float64 {
+	// TODO: Revisit this once client_golang offers better testing tools.
+	pb := &dto.Metric{}
+	m.Write(pb)
+	return pb.GetGauge().GetValue()
+}
+
 type testCase struct {
-	mountpath []string
+	mountpath string
 	address   string
 }
 
-func TestNFSMountPath(t *testing.T) {
-	var tests = []testCase{
-		{
-			mountpath: []string{"/opt/nfs1", "/opt/nfs2", "/opt/nfs3"},
-			address:   "127.0.0.1",
-		},
-		{
-			mountpath: []string{"/var/lib/nfs1", "/var/lib/nfs2", "/var/lib/nfs3"},
-			address:   "192.168.0.3",
-		},
+var tests = []testCase{
+	{
+		mountpath: "/opt/nfs1, /opt/nfs1, /opt/nfs2",
+		address:   "127.0.0.1",
+	},
+	{
+		mountpath: "/opt/nfs1, /opt/nfs1, /opt/nfs2",
+		address:   "192.168.0.1",
+	},
+}
+
+func TestInvalidConfig(t *testing.T) {
+	h := newNFS([]byte("not,enough,fields"))
+	defer h.Close()
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("While trying to get Hostname error happened: %v", err)
 	}
 
-	for _, c := range tests {
-		for _, path := range c.mountpath {
-			out, exists := execCommand(ExecPath, c.address)
-			if !exists {
-				t.Error("NFS not exist in server", c.address)
-			}
+	e, _ := NewExporter(hostname, ExecPath, tests[1].mountpath, tests[1].address)
+	ch := make(chan prometheus.Metric)
 
-			for _, p := range strings.Split(string(out), "\n") {
-				if strings.Split(p, " ")[0] == path {
-					log.Infoln("Mount Path is matching NFS server.", path, c.address)
-					break
-				}
-				t.Errorf("Path is not found in NFS server %s.", path)
-			}
-		}
+	go func() {
+		defer close(ch)
+		e.Collect(ch)
+	}()
+
+	if expect, got := 1., readGauge((<-ch).(prometheus.Gauge)); expect != got {
+		// up
+		t.Errorf("expected %f up, got %f", expect, got)
+	}
+
+	if <-ch != nil {
+		t.Errorf("expected closed channel")
 	}
 }
