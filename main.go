@@ -15,6 +15,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"os"
@@ -87,8 +88,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 // NewExporter initialises exporter
 func NewExporter(hostname, nfsExcPath, nfsPath, nfsAddress string) (*Exporter, error) {
 	if len(nfsExcPath) < 1 {
-		log.Fatalf("NFS executable path is wrong: %v", nfsExcPath)
+		log.Errorf("NFS executable path is wrong: %v", nfsExcPath)
+		return nil, fmt.Errorf("Error nfs execute path.")
 	}
+
 	volumes := strings.Split(nfsPath, ",")
 	if len(volumes) < 1 {
 		log.Warnf("No NFS storage mount path given. Proceeding without path information. Path: %v", nfsPath)
@@ -129,9 +132,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("While trying to get Hostname error happened: %v", err)
 	}
+
 	exporter, err := NewExporter(hostname, *nfsExcPath, *nfsPath, *nfsAddress)
 	if err != nil {
-		log.Errorf("Creating new Exporter went wrong, ... \n%v", err)
+		log.Fatalf("Creating new Exporter went wrong, ... \n%v", err)
 	}
 	prometheus.MustRegister(exporter)
 
