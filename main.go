@@ -66,7 +66,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	for _, path := range e.mountpath {
 		flag := 0.0
-
 		if exists {
 			for _, p := range strings.Split(string(out), "\n") {
 				if strings.Split(p, " ")[0] == path {
