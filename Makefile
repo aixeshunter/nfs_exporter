@@ -1,7 +1,8 @@
 GO ?= go
 FIRST_GOPATH := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 pkgs         = $(shell $(GO) list ./... | grep -v /vendor/)
-PREFIX ?= _outputs
+PREFIX       ?= _outputs
+GODEP        ?= $(GOPATH)/bin/dep
 
 DOCKERFILE	  ?= Dockerfile
 DOCKER_REPO       ?= aixeshunter
@@ -35,3 +36,10 @@ format:
 vet:
 	@echo ">> vetting code"
 	@$(GO) vet $(pkgs)
+
+promu-build: vet format promu
+	$(PROMU) build
+
+depcheck: $(GODEP)
+	@echo ">> ensure vendoring"
+	@$(GODEP) ensure

@@ -59,12 +59,23 @@ nfs_up{mount_path=" /opt",nfs_address="192.168.0.3"} 0
 nfs_up{mount_path="/opt/nfs",nfs_address="192.168.0.3"} 1
 ```
 
-## Example in Prometheus of Kubernetes Cluster
+## NFS-exporter of Prometheus Operator Kubernetes Cluster
 
-[yaml file](prometheus/manifests)
+[YAML File in Kubernetes](prometheus/manifests)
 
-### points
+```bash
+Pod <- Service <- ServiceMonitor
+```
 
+```bash
+nfs-exporter-service-monitor.yaml
+nfs-exporter-service.yaml
+nfs-exporter-deploy.yaml
+```
+
+### Points
+
+NFS server config in deployment.yaml
 ```yaml
       containers:
       - name: nfs-exporter
