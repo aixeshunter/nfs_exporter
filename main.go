@@ -60,15 +60,14 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	// Collect metrics from volume info
 	out, exists := execCommand(e.execpath, e.address)
+	if !exists {
+		log.Errorf("Getting NFS storage path by command showmount failed!")
+	}
 
 	for _, path := range e.mountpath {
 		flag := 0.0
 
-		if !exists {
-			log.Errorf("Get NFS storage path by command showmount failed!")
-		} else {
-			log.Infoln("Getting showmount result succeed.")
-
+		if exists {
 			for _, p := range strings.Split(string(out), "\n") {
 				if strings.Split(p, " ")[0] == path {
 					log.Infoln("Mount Path is matching NFS server.", path, e.address)
